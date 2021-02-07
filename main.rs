@@ -17,6 +17,8 @@ pub enum SyntaxKind {
 
     #[punct = "{"]
     LParen,
+
+    __LAST,
 }
 
 fn main() {

@@ -14,6 +14,8 @@ pub enum SyntaxKind {
 
     #[token]
     Comment,
+
+    __LAST,
 }
 
 fn main() {}

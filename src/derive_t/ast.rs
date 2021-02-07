@@ -30,11 +30,24 @@ pub struct Enum<'a> {
 
 impl<'a> Enum<'a> {
     fn from_syn(node: &'a DeriveInput, data: &'a DataEnum) -> Result<Enum<'a>> {
+        if data.variants.is_empty() {
+            bail_s!(node, "The enum must not be empty");
+        }
+
+        let mut found_last = false;
         let variants = data
             .variants
             .iter()
-            .map(|v| Variant::from_syn(&v))
+            .map(|v| {
+                found_last = v.ident == "__LAST";
+                Variant::from_syn(&v)
+            })
             .collect::<Result<Vec<_>>>()?;
+
+        if !found_last {
+            bail_s!(node, "The enum must have a variant called __LAST to be able to convert from u16 and back safely");
+        }
+
         Ok(Enum {
             original: node,
             variants,
@@ -59,7 +72,11 @@ impl<'a> Variant<'a> {
             bail_s!(variant, "Cannot have explicit descriminant");
         }
 
-        let attrs = Attrs::get(&variant.attrs)?;
+        if variant.ident == "__LAST" && !variant.attrs.is_empty() {
+            bail_s!(variant, "__LAST variant must not have any attributes");
+        }
+
+        let attrs = Attrs::get(variant, &variant.attrs)?;
 
         let res = Variant {
             original: variant,
@@ -79,7 +96,7 @@ pub struct Attrs<'a> {
 }
 
 impl<'a> Attrs<'a> {
-    pub fn get(input: &'a [Attribute]) -> Result<Attrs<'a>> {
+    pub fn get(node: &'a syn::Variant, input: &'a [Attribute]) -> Result<Attrs<'a>> {
         const LIT_STR_ERR: &str = "The value must be a string literal";
 
         let mut attrs = Attrs::default();
@@ -149,6 +166,10 @@ impl<'a> Attrs<'a> {
         self.token.replace(lit.map(|s| s.value()));
 
         Ok(())
+    }
+
+    pub fn all_none(&self) -> bool {
+        !(self.token.is_some() || self.kw.is_some() || self.punct.is_some())
     }
 }
 

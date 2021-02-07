@@ -36,33 +36,38 @@ impl Enum<'_> {
                 #([#macro_matches] => { $crate::SyntaxKind::#variant_ident };)*
             }
         };
-        eprintln!("{}", tokens);
         Ok(tokens)
     }
 }
 
 impl Variant<'_> {
     fn gen_macro_match(&self) -> Result<TokenStream> {
+        if self.ident == "__LAST" {
+            return Ok(quote! {});
+        }
+
+        if self.attrs.all_none() {
+            bail_s!(self.original, "Each variant must have one attribute");
+        }
+
         let token_stream = match &self.attrs {
             Attrs {
                 punct: Some(lit),
                 kw: None,
                 token: None,
                 ..
-            } => {
-                match &**lit {
-                    "[" => quote! { '[' },
-                    "]" => quote! { ']' },
-                    "(" => quote! { '(' },
-                    ")" => quote! { ')' },
-                    "{" => quote! { '{' },
-                    "}" => quote! { '}' },
-                    _ => {
-                        let cs = lit.chars().map(|c| Punct::new(c, Spacing::Joint));
-                        quote! { #(#cs)* }
-                    }
+            } => match &**lit {
+                "[" => quote! { '[' },
+                "]" => quote! { ']' },
+                "(" => quote! { '(' },
+                ")" => quote! { ')' },
+                "{" => quote! { '{' },
+                "}" => quote! { '}' },
+                _ => {
+                    let cs = lit.chars().map(|c| Punct::new(c, Spacing::Joint));
+                    quote! { #(#cs)* }
                 }
-            }
+            },
             Attrs {
                 kw: Some(optional),
                 punct: None,

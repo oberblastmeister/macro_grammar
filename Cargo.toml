@@ -21,3 +21,4 @@ common = { path = "common" }
 
 [dev-dependencies]
 trybuild = "1.0.40"
+rowan = "0.12.5"

@@ -32,6 +32,8 @@ pub enum SyntaxKind {
 
     #[punct = "]"]
     RBracket,
+
+    __LAST,
 }
 
 fn main() {
