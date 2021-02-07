@@ -1,4 +1,4 @@
-use macro_grammar::Language;
+use macro_grammar_impl::Language;
 
 #[derive(Debug)]
 pub enum SyntaxKind {

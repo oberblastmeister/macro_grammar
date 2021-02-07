@@ -1,4 +1,6 @@
-#[derive(macro_grammar::T)]
+use macro_grammar_impl::Token;
+
+#[derive(Token)]
 pub enum SyntaxKind {
     #[token]
     #[token]
@@ -7,7 +9,7 @@ pub enum SyntaxKind {
     __LAST,
 }
 
-#[derive(macro_grammar::T)]
+#[derive(Token)]
 pub enum SyntaxKind2 {
     #[punct = "."]
     #[punct = ".."]
@@ -16,7 +18,7 @@ pub enum SyntaxKind2 {
     __LAST,
 }
 
-#[derive(macro_grammar::T)]
+#[derive(Token)]
 pub enum SyntaxKind3 {
     #[kw]
     #[kw]

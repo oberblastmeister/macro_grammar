@@ -4,9 +4,6 @@ version = "0.1.0"
 authors = ["Brian Shu <littlebubu.shu@gmail.com>"]
 edition = "2018"
 
-[lib]
-proc-macro = true
-
 [[bin]]
 name = "testing"
 path = "main.rs"
@@ -14,11 +11,6 @@ path = "main.rs"
 [workspace]
 
 [dependencies]
-proc-macro2 = "1.0.24"
-quote = "1.0.8"
-syn = "1.0.60"
-common = { path = "common" }
-
-[dev-dependencies]
-trybuild = "1.0.40"
+smol_str = "0.1.17"
 rowan = "0.12.5"
+macro_grammar_impl = { path = "impl" }

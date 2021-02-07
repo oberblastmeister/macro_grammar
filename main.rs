@@ -1,4 +1,6 @@
-#[derive(macro_grammar::T)]
+use macro_grammar::Token;
+
+#[derive(Token)]
 pub enum SyntaxKind {
     #[token]
     String,

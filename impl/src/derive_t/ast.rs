@@ -1,6 +1,6 @@
 mod valid;
 
-use common::bail_s;
+use common::{bail, bail_s};
 use proc_macro2::Span;
 use std::marker::PhantomData;
 
@@ -92,6 +92,7 @@ pub struct Attrs<'a> {
     pub punct: Option<String>,
     pub kw: Option<Option<String>>,
     pub token: Option<Option<String>>,
+    pub misc: Option<String>,
     _marker: PhantomData<&'a ()>,
 }
 
@@ -106,23 +107,14 @@ impl<'a> Attrs<'a> {
             match meta {
                 Meta::NameValue(name_value) => {
                     let key = strip_path(&name_value.path)?;
+                    let value = get_lit_str(name_value.lit)
+                        .ok_or_else(|| Error::new_spanned(attr, LIT_STR_ERR))?;
 
                     match &*key.to_string() {
-                        "punct" => {
-                            let value = get_lit_str(name_value.lit)
-                                .ok_or_else(|| Error::new_spanned(attr, LIT_STR_ERR))?;
-                            attrs.replace_punct(attr.span(), value)?;
-                        }
-                        "kw" => {
-                            let value = get_lit_str(name_value.lit)
-                                .ok_or_else(|| Error::new_spanned(attr, LIT_STR_ERR))?;
-                            attrs.replace_kw(attr.span(), Some(value))?;
-                        }
-                        "token" => {
-                            let value = get_lit_str(name_value.lit)
-                                .ok_or_else(|| Error::new_spanned(attr, LIT_STR_ERR))?;
-                            attrs.replace_token(attr.span(), Some(value))?;
-                        }
+                        "punct" => attrs.replace_punct(attr.span(), value)?,
+                        "kw" => attrs.replace_kw(attr.span(), Some(value))?,
+                        "token" => attrs.replace_token(attr.span(), Some(value))?,
+                        "misc" => attrs.replace_misc(attr.span(), value)?,
                         _ => bail_s!(attr, "Invalid attribute key"),
                     };
                 }
@@ -141,9 +133,17 @@ impl<'a> Attrs<'a> {
         Ok(attrs)
     }
 
+    pub fn replace_misc(&mut self, span: Span, lit: LitStr) -> Result<()> {
+        if self.misc.is_some() {
+            bail!(span, "Duplicate misc attribute");
+        }
+        self.misc.replace(lit.value());
+        Ok(())
+    }
+
     pub fn replace_punct(&mut self, span: Span, lit: LitStr) -> Result<()> {
         if self.punct.is_some() {
-            return Err(Error::new(span, "Duplicate punct attribute"));
+            bail!(span, "Duplicate punct attribute");
         }
         self.punct.replace(lit.value());
 
@@ -152,7 +152,7 @@ impl<'a> Attrs<'a> {
 
     pub fn replace_kw(&mut self, span: Span, lit: Option<LitStr>) -> Result<()> {
         if self.kw.is_some() {
-            return Err(Error::new(span, "Duplicate kw attribute"));
+            bail!(span, "Duplicate kw attribute");
         }
         self.kw.replace(lit.map(|s| s.value()));
 
@@ -161,7 +161,7 @@ impl<'a> Attrs<'a> {
 
     pub fn replace_token(&mut self, span: Span, lit: Option<LitStr>) -> Result<()> {
         if self.token.is_some() {
-            return Err(Error::new(span, "Duplicate token attribute"));
+            bail!(span, "Duplicate token attribute");
         }
         self.token.replace(lit.map(|s| s.value()));
 
@@ -176,10 +176,7 @@ impl<'a> Attrs<'a> {
 fn strip_path(path: &Path) -> Result<&Ident> {
     let path = &path.segments;
     if path.len() != 1 {
-        return Err(Error::new_spanned(
-            path,
-            "The key must be a single segment path",
-        ));
+        bail_s!(path, "The key must be a single segment path");
     }
     let last = path.last().unwrap();
     if !last.arguments.is_empty() {

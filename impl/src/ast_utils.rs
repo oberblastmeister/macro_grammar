@@ -3,8 +3,6 @@ use std::marker::PhantomData;
 use rowan::{Language, SyntaxKind, SyntaxNode, SyntaxNodeChildren, SyntaxToken};
 use smol_str::SmolStr;
 
-pub use macro_grammar_impl::{Token, Language, ast};
-
 /// The main trait to go from untyped `SyntaxNode`  to a typed ast. The
 /// conversion itself has zero runtime cost: ast and syntax nodes have exactly
 /// the same representation: a pointer to the tree root and a pointer to the
@@ -46,7 +44,7 @@ pub struct AstChildren<N, L: Language> {
 }
 
 impl<N, L: Language> AstChildren<N, L> {
-    pub fn new(parent: &SyntaxNode<L>) -> Self {
+    fn new(parent: &SyntaxNode<L>) -> Self {
         AstChildren {
             inner: parent.children(),
             ph: PhantomData,

@@ -55,6 +55,7 @@ impl Variant<'_> {
                 punct: Some(lit),
                 kw: None,
                 token: None,
+                misc: None,
                 ..
             } => match &**lit {
                 "[" => quote! { '[' },
@@ -72,6 +73,7 @@ impl Variant<'_> {
                 kw: Some(optional),
                 punct: None,
                 token: None,
+                misc: None,
                 ..
             } => {
                 let ident =
@@ -82,10 +84,21 @@ impl Variant<'_> {
                 token: Some(optional),
                 punct: None,
                 kw: None,
+                misc: None,
                 ..
             } => {
                 let ident =
                     format_ident!("{}", optional.as_ref().unwrap_or(&self.ident.to_string()));
+                quote! { #ident }
+            }
+            Attrs {
+                misc: Some(misc),
+                token: None,
+                punct: None,
+                kw: None,
+                ..
+            } => {
+                let ident = format_ident!("{}", misc);
                 quote! { #ident }
             }
             _ => bail_s!(self.original, "Invalid combination of attributes"),
