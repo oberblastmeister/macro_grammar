@@ -1,6 +1,7 @@
 mod ast;
 
 use common::bail_s;
+use heck::SnakeCase;
 use proc_macro2::{Punct, Spacing, TokenStream};
 use quote::{format_ident, quote};
 use syn::{DeriveInput, Result};
@@ -19,6 +20,8 @@ pub fn derive(node: &DeriveInput) -> Result<TokenStream> {
 
 impl Enum<'_> {
     fn gen_t(self) -> Result<TokenStream> {
+        let ident = self.ident;
+
         let macro_matches = self
             .variants
             .iter()
@@ -31,9 +34,22 @@ impl Enum<'_> {
             .map(|Variant { ident, .. }| quote! {#ident});
 
         let tokens = quote! {
+            impl From<u16> for #ident {
+                fn from(d: u16) -> #ident {
+                    assert!(d <= (SyntaxKind::__LAST as u16));
+                    unsafe { std::mem::transmute::<u16, #ident>(d) }
+                }
+            }
+
+            impl From<#ident> for u16 {
+                fn from(k: #ident) -> u16 {
+                    k as u16
+                }
+            }
+
             #[macro_export]
             macro_rules! T {
-                #([#macro_matches] => { $crate::SyntaxKind::#variant_ident };)*
+                #([#macro_matches] => { $crate::#ident::#variant_ident };)*
             }
         };
         Ok(tokens)
@@ -76,8 +92,11 @@ impl Variant<'_> {
                 misc: None,
                 ..
             } => {
-                let ident =
-                    format_ident!("{}", optional.as_ref().unwrap_or(&self.ident.to_string()));
+                let ident_s = optional
+                    .as_ref()
+                    .unwrap_or(&self.ident.to_string())
+                    .to_snake_case();
+                let ident = format_ident!("{}", ident_s);
                 quote! { #ident }
             }
             Attrs {
@@ -87,8 +106,11 @@ impl Variant<'_> {
                 misc: None,
                 ..
             } => {
-                let ident =
-                    format_ident!("{}", optional.as_ref().unwrap_or(&self.ident.to_string()));
+                let ident_s = optional
+                    .as_ref()
+                    .unwrap_or(&self.ident.to_string())
+                    .to_snake_case();
+                let ident = format_ident!("{}", ident_s);
                 quote! { #ident }
             }
             Attrs {
@@ -98,7 +120,8 @@ impl Variant<'_> {
                 kw: None,
                 ..
             } => {
-                let ident = format_ident!("{}", misc);
+                let ident_s = misc.to_snake_case();
+                let ident = format_ident!("{}", ident_s);
                 quote! { #ident }
             }
             _ => bail_s!(self.original, "Invalid combination of attributes"),

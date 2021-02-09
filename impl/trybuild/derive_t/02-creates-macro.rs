@@ -35,18 +35,23 @@ pub enum SyntaxKind {
     #[punct = "]"]
     RBracket,
 
+    #[token]
+    Ident,
+
     __LAST,
 }
 
 fn main() {
     T![.];
     T![,];
-    T![Async];
-    T![String];
+    T![async];
+    T![string];
     T!['('];
     T![')'];
     T!['{'];
     T!['}'];
     T!['['];
     T![']'];
+    T![ident];
+    T![comment];
 }

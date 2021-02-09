@@ -1,3 +1,4 @@
+mod ast_transform;
 mod derive_language;
 mod derive_t;
 
@@ -22,5 +23,8 @@ pub fn derive_language(input: TokenStream) -> TokenStream {
 
 #[proc_macro_attribute]
 pub fn ast(attr: TokenStream, input: TokenStream) -> TokenStream {
-    todo!()
+    let input = parse_macro_input!(input as DeriveInput);
+    ast_transform::transform(attr.into(), &input)
+        .unwrap_or_else(|err| err.to_compile_error())
+        .into()
 }

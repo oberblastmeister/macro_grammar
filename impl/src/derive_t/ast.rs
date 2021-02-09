@@ -17,13 +17,14 @@ impl<'a> Input<'a> {
     pub fn from_syn(node: &'a DeriveInput) -> Result<Input<'a>> {
         match &node.data {
             Data::Enum(data) => Enum::from_syn(node, data).map(Input::Enum),
-            Data::Struct(_) => Err(Error::new_spanned(node, "Struct types are not supported")),
-            Data::Union(_) => Err(Error::new_spanned(node, "Union types are not supported")),
+            Data::Struct(_) => bail_s!(node, "Struct types are not supported"),
+            Data::Union(_) => bail_s!(node, "Union types are not supported"),
         }
     }
 }
 
 pub struct Enum<'a> {
+    pub ident: &'a Ident,
     pub original: &'a DeriveInput,
     pub variants: Vec<Variant<'a>>,
 }
@@ -49,6 +50,7 @@ impl<'a> Enum<'a> {
         }
 
         Ok(Enum {
+            ident: &node.ident,
             original: node,
             variants,
         })

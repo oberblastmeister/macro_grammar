@@ -4,7 +4,6 @@ use macro_grammar_impl::{Token, ast, Language};
 pub enum RustLanguage {}
 
 #[derive(Debug, Token, PartialEq, Eq)]
-#[repr(u16)]
 pub enum SyntaxKind {
     #[token]
     String,
