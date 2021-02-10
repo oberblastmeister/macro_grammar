@@ -1,6 +1,7 @@
 use macro_grammar_impl::Language;
 
 #[derive(Debug)]
+#[repr(u16)]
 pub enum SyntaxKind {
     Variant,
 }

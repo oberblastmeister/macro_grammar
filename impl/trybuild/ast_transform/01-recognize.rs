@@ -3,6 +3,7 @@ use macro_grammar_impl::{Token, ast, Language};
 #[derive(Clone, Copy, Debug, PartialEq, Eq, PartialOrd, Ord, Hash, Language)]
 pub enum RustLanguage {}
 
+#[repr(u16)]
 #[derive(Debug, Token, PartialEq, Eq)]
 pub enum SyntaxKind {
     #[token]

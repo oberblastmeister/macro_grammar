@@ -1,6 +1,7 @@
 use macro_grammar_impl::Token;
 
 #[derive(Token)]
+#[repr(u16)]
 pub enum SyntaxKind {
     #[token]
     #[token]
@@ -10,6 +11,7 @@ pub enum SyntaxKind {
 }
 
 #[derive(Token)]
+#[repr(u16)]
 pub enum SyntaxKind2 {
     #[punct = "."]
     #[punct = ".."]
@@ -19,6 +21,7 @@ pub enum SyntaxKind2 {
 }
 
 #[derive(Token)]
+#[repr(u16)]
 pub enum SyntaxKind3 {
     #[kw]
     #[kw]

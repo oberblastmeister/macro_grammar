@@ -37,7 +37,8 @@ impl Enum<'_> {
             impl From<u16> for #ident {
                 fn from(d: u16) -> #ident {
                     assert!(d <= (SyntaxKind::__LAST as u16));
-                    unsafe { std::mem::transmute::<u16, #ident>(d) }
+                    // unsafe { std::mem::transmute::<u16, #ident>(d) }
+                    unsafe { std::mem::transmute(d) }
                 }
             }
 
